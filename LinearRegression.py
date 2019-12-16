@@ -20,15 +20,6 @@ import matplotlib.style  as style
 #style.use("ggplot")
 
 
-def hypothesis(theta0, theta1, x_i ) -> float :
-    """
-    Compute value of hypothese h(theta) for X(i) 
-    Input:  theta0, theta1, X(i)
-    Output: h(X(i))
-    """
-    return theta0 + x_i * theta1                                         # calculate hypothesis as per formula
-
-
 def partial_derivative_of_theta1(X, y, y_pred ) -> float:
     """
     Input:  X, y, y_pred
@@ -64,9 +55,7 @@ def get_predicted_y(theta0, theta1, X) -> list:
     Input:  X, theta0, theta1
     Output: y_pred
     """
-    y_pred = np.empty_like(X)
-    for i in range(len(X)):
-        y_pred[i] = hypothesis(theta0, theta1, X[i] )
+    y_pred = theta0 + theta1 * X 
     
     return y_pred
 
@@ -104,7 +93,7 @@ if __name__ == "__main__":
     theta0        = 10
     theta1        = 0.1
     learning_rate = 0.0001
-    
+
     y_pred = get_predicted_y(theta0, theta1, X_train)                   # calculate y_pred for current values of theta
     mse = mean_squared_error(y_train, y_pred)                           # calculate mean square error
     plot_graph_and_line(X_train, y_train, y_pred)
