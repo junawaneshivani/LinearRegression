@@ -12,6 +12,12 @@
 ## Input for the algorithm --> data.csv, no of hours spent studying VS grade 
 
 
+## Normal Equation          --> directlty gives theta values no need for alpha
+#######################
+### ( X'*X )-1 *X'*y ##
+#######################
+
+
 import matplotlib.pyplot as plt
 import pandas            as pd
 import numpy             as np
@@ -50,7 +56,7 @@ def mean_squared_error(y, y_pred ) -> float:
         sum += ( (y_pred[i] - y[i]) ** 2 )                              # formula of partial derivate of J(theta) wrt theta0  
     return sum / len(y)                                                        
 
-def get_predicted_y(theta0, theta1, X) -> list:
+def get_hypothesis(theta0, theta1, X) -> list:
     """
     Input:  X, theta0, theta1
     Output: y_pred
@@ -71,14 +77,22 @@ def gradient_descent(theta0, theta1, learning_rate, X, y, y_pred) -> (float,floa
     theta1  = theta1 - learning_rate * dtheta1
     return theta0, theta1
 
-def plot_graph_and_line(X, y, y_pred) -> None:
+def plot_graph(X, y) -> None:
     """
     Input:  X, y, y_pred
     Output: points and lines on graph
     """
     plt.title("Linear Regression")
     plt.scatter(X, y, color="green")
-    plt.plot(X, y_pred, color="red")
+    plt.show(block=False)
+
+def plot_line(X, y_pred, color) -> None:
+    """
+    Input:  X, y, y_pred
+    Output: points and lines on graph
+    """
+    plt.title("Linear Regression")
+    plt.plot(X, y_pred, color)
     plt.show(block=False)
 
 if __name__ == "__main__":
@@ -90,34 +104,53 @@ if __name__ == "__main__":
     X_train, X_test = X[:80], X[80:]                                    # split data to calculate accuracy later
     y_train, y_test = y[:80], y[80:]
 
-    theta0        = 10
+    plot_graph(X_train, y_train )
+
+    # Gradient Descent Model
+    theta0        = 1
     theta1        = 0.1
     learning_rate = 0.0001
 
-    y_pred = get_predicted_y(theta0, theta1, X_train)                   # calculate y_pred for current values of theta
-    mse = mean_squared_error(y_train, y_pred)                           # calculate mean square error
-    plot_graph_and_line(X_train, y_train, y_pred)
-    
+    h = get_hypothesis(theta0, theta1, X_train)                         # calculate y_pred for current values of theta
+    mse = mean_squared_error(y_train, h)                                # calculate mean square error
+    #plot_line(X_train, y_pred, "grey")
+    print (" Theta0: {:.2f}, Theta1: {:.2f}, iteration: {:.2f}, MSE: {:.2f} ".format(theta0, theta1, 0, mse))
+
     for i in range(1000):
-        theta0, theta1 = gradient_descent(theta0, theta1, learning_rate, X_train, y_train, y_pred)  # new values of theta
-        y_pred = get_predicted_y(theta0, theta1, X_train)                                           # calculate y_pred for current values of theta
-        new_mse = mean_squared_error(y_train, y_pred)                                               # calculate mean square error
+        theta0, theta1 = gradient_descent(theta0, theta1, learning_rate, X_train, y_train, h)  # new values of theta
+        h = get_hypothesis(theta0, theta1, X_train)                                            # calculate y_pred for current values of theta
+        new_mse = mean_squared_error(y_train, h)                                               # calculate mean square error
         
-        print (" Theta0: {}, Theta1: {}, iteration: {}, MSE: {} ".format(theta0, theta1, i, new_mse))
+        print (" Theta0: {:.2f}, Theta1: {:.2f}, iteration: {:.2f}, MSE: {:.2f} ".format(theta0, theta1, i, new_mse))
         
         if math.isclose(mse, new_mse, abs_tol=1e-05):                   # stopping the gradient descent if the mse does not change by more than 1e-05
-            print(" Breaking.. Found ideal value of theta0 and theta1.. ")
-            plot_graph_and_line(X_train, y_train, y_pred)
+            print(" Breaking.. Found ideal value of theta0 and theta1.. \n")
             break       
         
         if (new_mse < mse):
             mse = new_mse    
-        if i % 20 == 0:
-            plot_graph_and_line(X_train, y_train, y_pred)
+        #if i % 20 == 0:
+            #plot_line(X_train, y_pred, "grey")
+
+    plot_line(X_train, h, "red")
+    h = get_hypothesis(theta0, theta1, X_test)                          # Calculating accuracy on test data
+    accuracy = mean_squared_error(y_test, h)
+    print( "Gradient Descent, theta0: {:.2f}, theta1: {:.2f}, accuracy {:.2f}".format(theta0, theta1, accuracy ) )
     
-    y_pred = get_predicted_y(theta0, theta1, X_test)                    # Calculating accuracy on test data
-    accuracy = "Accuracy: " + str(mean_squared_error(y_test, y_pred))
+    # Normal Equation Model 
+    X_train = np.c_[ np.ones(len(X_train)), X_train ]                   # converting X to (n + 1) dimension    
+    X_train_transpose = np.transpose(X_train)                           # getting X transpose
     
-    plt.text(30, 120, accuracy, bbox=dict(facecolor='red', alpha=0.5))    
+    theta = np.linalg.inv(X_train_transpose.dot(X_train)).dot( X_train_transpose.dot(y_train) )
+    
+    h = get_hypothesis(theta[0], theta[1], X_train[:,1])
+    plot_line(X_train[:,1], h, "blue")
+    
+    h = get_hypothesis(theta[0], theta[1], X_test)                          # Calculating accuracy on test data
+    accuracy = mean_squared_error(y_test, h) 
+    print( "Normal Equation, theta0: {:.2f}, theta1: {:.2f}, accuracy {:.2f}".format(theta[0], theta[1], accuracy ))
+    
+
+    plt.xlabel('Hours Studied')
+    plt.ylabel('Marks Scored')
     plt.show()
-    
