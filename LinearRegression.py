@@ -167,4 +167,4 @@ if __name__ == "__main__":
 
     plt1.legend()
     plt.show()
-    input()
+    
