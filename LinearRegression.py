@@ -23,6 +23,8 @@ from mpl_toolkits.mplot3d import Axes3D
 import pandas as pd
 import numpy as np
 import math
+from sklearn import linear_model
+from sklearn.metrics import mean_squared_error
 
 
 def partial_derivative_of_theta1(X, y, h) -> float:
@@ -47,7 +49,7 @@ def partial_derivative_of_theta0(y, h) -> float:
     return dtheta0 / len(y)
 
 
-def mean_squared_error(y, h) -> float:
+def my_mean_squared_error(y, h) -> float:
     """
     Input:  y, h(hypothesis)
     Output: mean_square_error
@@ -123,7 +125,7 @@ if __name__ == "__main__":
     learning_rate = 0.0001
 
     h = get_hypothesis(theta0, theta1, X_train)                                                         # calculate hypothesis for current values of theta
-    mse = mean_squared_error(y_train, h)                                                                # calculate mean square error
+    mse = my_mean_squared_error(y_train, h)                                                                # calculate mean square error
     plt2.scatter(theta0, theta1, mse, c='r', marker='o')
 
     #plot_line(X_train, h, "red")
@@ -132,7 +134,7 @@ if __name__ == "__main__":
     for i in range(1000):
         theta0, theta1 = gradient_descent(theta0, theta1, learning_rate, X_train, y_train, h)           # new values of theta
         h = get_hypothesis(theta0, theta1, X_train)                                                     # calculate hypothesis for current values of theta
-        new_mse = mean_squared_error(y_train, h)                                                        # calculate mean square error
+        new_mse = my_mean_squared_error(y_train, h)                                                        # calculate mean square error
         plt2.scatter(theta0, theta1, mse, c='r', marker='o')
 
         print(" Theta0: {:.2f}, Theta1: {:.2f}, iteration: {:.2f}, MSE: {:.2f} ".format(theta0, theta1, i+1, new_mse))
@@ -149,7 +151,7 @@ if __name__ == "__main__":
     plot_line(plt1, X_train, h, color="red", label="Gradient Descent")
 
     h = get_hypothesis(theta0, theta1, X_test)                                                          # Calculating accuracy on test data
-    accuracy = mean_squared_error(y_test, h)
+    accuracy = my_mean_squared_error(y_test, h)
     print("Gradient Descent, theta0: {:.2f}, theta1: {:.2f}, accuracy {:.2f}".format(theta0, theta1, accuracy))
 
     # Normal Equation Model 
@@ -162,9 +164,17 @@ if __name__ == "__main__":
     plot_line(plt1, X_train[:, 1], h, color="blue", label="Normal Equation")
 
     h = get_hypothesis(theta[0], theta[1], X_test)                                                      # Calculating accuracy on test data
-    accuracy = mean_squared_error(y_test, h)
+    accuracy = my_mean_squared_error(y_test, h)
     print("Normal Equation, theta0: {:.2f}, theta1: {:.2f}, accuracy {:.2f}".format(theta[0], theta[1], accuracy))
+
+
+    # scikit-learn
+    X_train, X_test = X[:80], X[80:]  # split data to calculate accuracy later
+    y_train, y_test = y[:80], y[80:]
+    reg = linear_model.LinearRegression()
+    reg.fit(X_train.reshape(80, 1), y_train.reshape(80, 1))
+    h = reg.predict(X_test.reshape(20, 1))
+    print("Scikit Learn, theta0: {:.2f}, theta1: {:.2f}, accuracy {:.2f}".format(reg.intercept_[0], reg.coef_[0][0], mean_squared_error(h, y_test.reshape(20, 1))))
 
     plt1.legend()
     plt.show()
-    
