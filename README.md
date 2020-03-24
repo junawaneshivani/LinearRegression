@@ -8,4 +8,4 @@ Lets code the simplest Supervised Learning Algorithm !
 
 ## Output
 
-![OUTPUT]("linear_regression.png")
+![OUTPUT](linear_regression.png)
